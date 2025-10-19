@@ -41,7 +41,7 @@ func moveCursor(x, y int) {
 	screenBuffer.WriteString(fmt.Sprintf("\033[%d;%dH", y+1, x+1))
 }
 
-// Xoa man hin
+// Xoa man hinh
 func clearScreen() {
 	if runtime.GOOS == "windows" {
 		cmd := exec.Command("cmd", "/c", "cls")
@@ -148,7 +148,7 @@ func (g *Game) updateScreen(tail Point, ateFood bool) {
 	moveCursor(0, g.Height)
 	screenBuffer.WriteString(fmt.Sprintf("Score: %d", g.Score))
 
-	//in ra tat ca
+	//In ra tat ca
 	fmt.Print(screenBuffer.String())
 	screenBuffer.Reset()
 }
@@ -198,14 +198,12 @@ func main() {
 	}
 	defer keyboard.Close()
 
-	fmt.Println("Press some key to start, ESC or Q to escape")
-
 	game := NewGame(40, 20)
 
-	//Ve man inh
-
+	//Ve man hinh
 	game.initialDraw()
 
+	
 	keyEvents := make(chan keyboard.Key)
 
 	go func() {
