@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -20,7 +21,7 @@ const (
 	SNAKE_BODY   = '■'
 	SNAKE_HEAD   = '●'
 	FOOD         = '♥'
-	SPECIAL_FOOD = '@'
+	SPECIAL_FOOD = '⚝'
 	WALL         = '█'
 	EMPTY        = ' '
 )
@@ -33,6 +34,7 @@ type Game struct {
 	Score         int
 	Speed         time.Duration
 	IsOver        bool
+	IsSpecialFood bool
 }
 
 var screenBuffer strings.Builder
@@ -53,8 +55,7 @@ func clearScreen() {
 	}
 }
 
-//New game
-
+// New game
 func NewGame(width, height int) *Game {
 	startX, startY := width/2, height/2
 	snake := []Point{{startX, startY}, {startX - 1, startY}, {startX - 2, startY}}
@@ -73,13 +74,7 @@ func NewGame(width, height int) *Game {
 func (g *Game) placeFood() {
 	for {
 		g.Food = Point{rand.Intn(g.Width-2) + 1, rand.Intn(g.Height-2) + 1}
-		onSnake := false
-		for _, p := range g.Snake {
-			if p == g.Food {
-				onSnake = true
-				break
-			}
-		}
+		onSnake := slices.Contains(g.Snake, g.Food)
 		if !onSnake {
 			break
 		}
@@ -144,13 +139,14 @@ func (g *Game) updateScreen(tail Point, ateFood bool) {
 	} else {
 		//Neu an thi ve moi moi
 		moveCursor(g.Food.X, g.Food.Y)
-		if (g.Score + 5) % 5 == 0 {
+		if ranNum := rand.Intn(3); ranNum == 2 {
+			g.IsSpecialFood = true
 			screenBuffer.WriteRune(SPECIAL_FOOD)
 		} else {
+			g.IsSpecialFood = false
 			screenBuffer.WriteRune(FOOD)
 		}
 
-		
 	}
 	moveCursor(0, g.Height)
 	screenBuffer.WriteString(fmt.Sprintf("Score: %d", g.Score))
@@ -167,14 +163,12 @@ func (g *Game) Update() (Point, bool) {
 	newHead := Point{head.X + g.Direction.X, head.Y + g.Direction.Y}
 
 	//Kiem tra va cham tuong
-
 	if newHead.X <= 0 || newHead.X >= g.Width-1 || newHead.Y <= 0 || newHead.Y >= g.Height-1 {
 		g.IsOver = true
 		return tail, false
 	}
 
 	//Kiem tra va cham than
-
 	for i := 1; i < len(g.Snake); i++ {
 		if newHead == g.Snake[i] {
 			g.IsOver = true
@@ -185,7 +179,12 @@ func (g *Game) Update() (Point, bool) {
 	ateFood := false
 	if newHead == g.Food {
 		ateFood = true
-		g.Score++
+		if g.IsSpecialFood {
+			g.Score += 5
+		} else {
+			g.Score++
+		}
+
 		if g.Speed > 50*time.Millisecond {
 			g.Speed -= 5 * time.Millisecond
 		}
