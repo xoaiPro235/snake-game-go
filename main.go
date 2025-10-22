@@ -17,11 +17,12 @@ type Point struct {
 }
 
 const (
-	SNAKE_BODY = '■'
-	SNAKE_HEAD = '●'
-	FOOD       = '♥'
-	WALL       = '█'
-	EMPTY      = ' '
+	SNAKE_BODY   = '■'
+	SNAKE_HEAD   = '●'
+	FOOD         = '♥'
+	SPECIAL_FOOD = '@'
+	WALL         = '█'
+	EMPTY        = ' '
 )
 
 type Game struct {
@@ -143,7 +144,13 @@ func (g *Game) updateScreen(tail Point, ateFood bool) {
 	} else {
 		//Neu an thi ve moi moi
 		moveCursor(g.Food.X, g.Food.Y)
-		screenBuffer.WriteRune(FOOD)
+		if (g.Score + 5) % 5 == 0 {
+			screenBuffer.WriteRune(SPECIAL_FOOD)
+		} else {
+			screenBuffer.WriteRune(FOOD)
+		}
+
+		
 	}
 	moveCursor(0, g.Height)
 	screenBuffer.WriteString(fmt.Sprintf("Score: %d", g.Score))
@@ -203,7 +210,6 @@ func main() {
 	//Ve man hinh
 	game.initialDraw()
 
-	
 	keyEvents := make(chan keyboard.Key)
 
 	go func() {
